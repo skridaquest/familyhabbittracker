@@ -14,6 +14,7 @@ export interface User {
   role: string;
   avatarSeed: string;
   avatarStyle: string;
+  avatarImage?: string;
   habits: string[];
 }
 

@@ -1,5 +1,9 @@
 
 import { User, FamilyData, DayData, HabitStatus } from './types';
+import fatherIcon from './assets/avatars/father.png';
+import motherIcon from './assets/avatars/mother.png';
+import girlIcon from './assets/avatars/girl.png';
+import boyIcon from './assets/avatars/boy.png';
 
 export const USERS: { [key: string]: User } = {
   Prem: {
@@ -7,6 +11,7 @@ export const USERS: { [key: string]: User } = {
     role: 'Father',
     avatarSeed: 'Prem',
     avatarStyle: 'personas',
+    avatarImage: fatherIcon,
     habits: ['Yoga', 'Sadhana', 'Trading', 'Office', 'SaaS', 'Freelancing'],
   },
   Sujata: {
@@ -14,6 +19,7 @@ export const USERS: { [key: string]: User } = {
     role: 'Mother',
     avatarSeed: 'Sujata',
     avatarStyle: 'personas',
+    avatarImage: motherIcon,
     habits: ['Yoga', 'Sadhana', 'English', 'Trading', 'Self time'],
   },
   MAA: {
@@ -21,6 +27,7 @@ export const USERS: { [key: string]: User } = {
     role: 'Girl',
     avatarSeed: 'MAA',
     avatarStyle: 'micah',
+    avatarImage: girlIcon,
     habits: ['Bath', 'Sadhana', 'Homework', 'Math', 'Reading', 'Experiment', 'Singing', 'Garden', 'Video'],
   },
   Shiva: {
@@ -28,6 +35,7 @@ export const USERS: { [key: string]: User } = {
     role: 'Boy',
     avatarSeed: 'Shiva',
     avatarStyle: 'micah',
+    avatarImage: boyIcon,
     habits: ['Bath', 'Sadhana', 'Phonics', 'Marathi reading'],
   },
 };
@@ -42,20 +50,20 @@ export const getDatesForFebruary2026 = (): string[] => {
 };
 
 export const generateInitialData = (): FamilyData => {
-    const dates = getDatesForFebruary2026();
-    const initialData: FamilyData = {};
+  const dates = getDatesForFebruary2026();
+  const initialData: FamilyData = {};
 
-    Object.values(USERS).forEach(user => {
-        const userProgress: { [date: string]: DayData } = {};
-        dates.forEach(date => {
-            const dayData: DayData = {};
-            user.habits.forEach(habit => {
-                dayData[habit] = HabitStatus.Empty;
-            });
-            userProgress[date] = dayData;
-        });
-        initialData[user.name] = { ...user, progress: userProgress };
+  Object.values(USERS).forEach(user => {
+    const userProgress: { [date: string]: DayData } = {};
+    dates.forEach(date => {
+      const dayData: DayData = {};
+      user.habits.forEach(habit => {
+        dayData[habit] = HabitStatus.Empty;
+      });
+      userProgress[date] = dayData;
     });
+    initialData[user.name] = { ...user, progress: userProgress };
+  });
 
-    return initialData;
+  return initialData;
 };

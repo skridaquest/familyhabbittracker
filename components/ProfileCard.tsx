@@ -16,7 +16,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ user, onSelect }) => {
                  transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:border-purple-500"
     >
       <img
-        src={`https://api.dicebear.com/8.x/${user.avatarStyle}/svg?seed=${user.avatarSeed}`}
+        src={user.avatarImage || `https://api.dicebear.com/8.x/${user.avatarStyle}/svg?seed=${user.avatarSeed}`}
         alt={user.name}
         className="w-32 h-32 rounded-full mb-4 border-4 border-slate-600 object-cover bg-slate-700"
       />

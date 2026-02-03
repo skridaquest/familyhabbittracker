@@ -2,6 +2,7 @@
 import React from 'react';
 import { Check, X, ArrowLeft } from 'lucide-react';
 import { UserData, HabitStatus } from '../types';
+import { USERS } from '../constants';
 
 interface HabitTrackerGridProps {
   user: UserData;
@@ -23,6 +24,11 @@ const StatusIcon: React.FC<{ status: HabitStatus }> = ({ status }) => {
 
 
 const HabitTrackerGrid: React.FC<HabitTrackerGridProps> = ({ user, dates, onStatusChange, onBack }) => {
+  // Lookup the latest user definition to ensure we have the local asset
+  // This handles the case where localStorage has old user data without the avatarImage property
+  const staticUser = USERS[user.name];
+  const avatarSource = staticUser?.avatarImage || user.avatarImage || `https://api.dicebear.com/8.x/${user.avatarStyle}/svg?seed=${user.avatarSeed}`;
+
   return (
     <div className="bg-slate-800/60 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-2xl border border-slate-700 w-full">
       <div className="flex items-center mb-6">
@@ -35,7 +41,7 @@ const HabitTrackerGrid: React.FC<HabitTrackerGridProps> = ({ user, dates, onStat
         </button>
         <div className="flex items-center ml-6">
           <img
-            src={`https://api.dicebear.com/8.x/${user.avatarStyle}/svg?seed=${user.avatarSeed}`}
+            src={avatarSource}
             alt={user.name}
             className="w-12 h-12 rounded-full border-2 border-purple-400 object-cover bg-slate-700"
           />
