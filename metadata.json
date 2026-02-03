@@ -1,0 +1,5 @@
+{
+  "name": "Family Habit Tracker",
+  "description": "A responsive web application to track daily habits for each family member for February 2026. Data is persisted in the browser's local storage.",
+  "requestFramePermissions": []
+}
