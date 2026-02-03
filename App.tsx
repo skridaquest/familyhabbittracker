@@ -3,7 +3,7 @@ import { USERS, getDatesForFebruary2026, generateInitialData } from './constants
 import { HabitStatus, FamilyData } from './types';
 import ProfileSelection from './components/ProfileSelection';
 import HabitTrackerGrid from './components/HabitTrackerGrid';
-import OverallProgress from './components/OverallProgress';
+import HabitStatsCard from './components/HabitStatsCard';
 
 import { supabase } from './lib/supabase';
 
@@ -42,10 +42,12 @@ const App: React.FC = () => {
     // Optional: Realtime subscription could go here
   }, []);
 
-  const { overallProgress, totalCompleted } = useMemo(() => {
-    if (!selectedProfile) return { overallProgress: 0, totalCompleted: 0 };
+  const { totalCompleted, totalIncomplete, totalPending } = useMemo(() => {
+    if (!selectedProfile) return { totalCompleted: 0, totalIncomplete: 0, totalPending: 0 };
 
     let completedHabits = 0;
+    let incompleteHabits = 0;
+    let pendingHabits = 0;
     let totalPossibleHabits = 0;
     const numDays = getDatesForFebruary2026().length;
 
@@ -60,14 +62,20 @@ const App: React.FC = () => {
         Object.values(day).forEach(status => {
           if (status === HabitStatus.Completed) {
             completedHabits++;
+          } else if (status === HabitStatus.Incomplete) {
+            incompleteHabits++;
+          } else {
+            pendingHabits++;
           }
         });
       });
     }
 
-    const percentage = totalPossibleHabits > 0 ? Math.round((completedHabits / totalPossibleHabits) * 100) : 0;
-
-    return { overallProgress: percentage, totalCompleted: completedHabits };
+    return {
+      totalCompleted: completedHabits,
+      totalIncomplete: incompleteHabits,
+      totalPending: pendingHabits
+    };
   }, [appData, selectedProfile]);
 
 
@@ -107,7 +115,63 @@ const App: React.FC = () => {
     }
   };
 
-  const userArray = Object.values(USERS);
+  // Calculate Ranks and Scores
+  const rankedUsers = useMemo(() => {
+    const today = new Date();
+    // In a real app, use actual current date. Here we use "1", "2", etc.
+    // For demo purposes, let's assume "today" covers all dates for score calculation
+    // or arguably, we should calculate up to the max date present in data.
+    // Let's calculate based on ALL dates for now as per requirement "based on current date" is tricky with static Feb 2026.
+    // We'll treat "current date" as the end of the month for this simulation or just check all entries.
+
+    // Better logic: Compare completed vs total due up to "today".
+    // Since we don't have a real running clock syncing with 2026, we will calculate based on ALL days available in the grid.
+
+    const userScores = Object.values(USERS).map(user => {
+      const userData = appData[user.name];
+      let completed = 0;
+      let totalDue = 0;
+
+      if (userData) {
+        Object.values(userData.progress).forEach(day => {
+          Object.values(day).forEach(status => {
+            totalDue++; // Every cell is a due habit
+            if (status === HabitStatus.Completed) {
+              completed++;
+            }
+          });
+        });
+      }
+
+      // If data is empty (initial load), totalDue might be 0 if loop doesn't run, 
+      // but generateInitialData ensures structure exists.
+
+      const score = totalDue > 0 ? (completed / totalDue) * 100 : 0;
+      return { ...user, score, rank: 0 }; // Initialize rank
+    });
+
+    // Sort descending by score
+    userScores.sort((a, b) => b.score - a.score);
+
+    // Assign ranks logic
+    // We want #1, #2, #3, #4
+    userScores.forEach((u, index) => {
+      u.rank = index + 1;
+    });
+
+    // Now we need to map this back to the original order (or sorted order) for display? 
+    // User requested "looking at profile selection cards we should know who is leading". 
+    // I will return them in the original family order but with the calculated rank attached.
+
+    const familyOrder = ['Prem', 'Sujata', 'MAA', 'Shiva'];
+    const finalRankedUsers = familyOrder.map(name => {
+      const userWithStats = userScores.find(u => u.name === name);
+      return userWithStats!;
+    });
+
+    return finalRankedUsers;
+  }, [appData]);
+
   const selectedUserData = selectedProfile ? appData[selectedProfile] : null;
 
   return (
@@ -121,10 +185,14 @@ const App: React.FC = () => {
 
         <main className="w-full">
           {!selectedUserData ? (
-            <ProfileSelection users={userArray} onSelectProfile={handleProfileSelect} />
+            <ProfileSelection users={rankedUsers} onSelectProfile={handleProfileSelect} />
           ) : (
             <>
-              <OverallProgress percentage={overallProgress} />
+              <HabitStatsCard
+                completed={totalCompleted}
+                incomplete={totalIncomplete}
+                pending={totalPending}
+              />
               <HabitTrackerGrid
                 user={selectedUserData}
                 dates={getDatesForFebruary2026()}
